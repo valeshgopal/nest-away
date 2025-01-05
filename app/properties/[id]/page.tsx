@@ -6,12 +6,29 @@ import BookingCalendar from '@/components/properties/BookingCalendar';
 import { fetchPropertyDetails } from '@/utils/actions';
 import { redirect } from 'next/navigation';
 import PropertyRating from '@/components/card/PropertyRating';
+import PropertyDetails from '@/components/properties/PropertyDetails';
+import UserInfo from '@/components/properties/UserInfo';
+import { Separator } from '@/components/ui/separator';
+import Description from '@/components/properties/Description';
+import Amenities from '@/components/properties/Amenities';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const DynamicMap = dynamic(
+  () => import('@/components/properties/PropertyMap'),
+  {
+    ssr: false,
+    loading: () => <Skeleton className='h-[400px] w-full' />,
+  }
+);
 
 async function PropertyDetailsPage({ params }: { params: { id: string } }) {
   const property = await fetchPropertyDetails(params.id);
   if (!property) redirect('/');
   const { baths, bedrooms, beds, guests } = property;
   const details = { baths, bedrooms, beds, guests };
+  const firstName = property.profile.firstName;
+  const profileImage = property.profile.profileImage;
   return (
     <section>
       <BreadCrumbs name={property.name} />
@@ -30,6 +47,12 @@ async function PropertyDetailsPage({ params }: { params: { id: string } }) {
             <h1 className='text-xl font-bold'>{property.name}</h1>
             <PropertyRating inPage propertyId={property.id} />
           </div>
+          <PropertyDetails details={details} />
+          <UserInfo profile={{ profileImage, firstName }} />
+          <Separator className='mt-4' />
+          <Description description={property.description} />
+          <Amenities amenities={property.amenities} />
+          <DynamicMap countryCode={property.country} />;
         </div>
         <div className='lg:col-span-4 flex flex-col items-center'>
           <BookingCalendar />
