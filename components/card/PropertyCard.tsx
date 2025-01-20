@@ -4,6 +4,7 @@ import CountryFlagAndName from './CountryFlagAndName';
 import FavoriteToggleButton from './FavoriteToggleButton';
 import { PropertyCardProps } from '@/utils/types';
 import { formatCurrency } from '@/utils/format';
+import PropertyRating from './PropertyRating';
 
 function PropertyCard({ property }: { property: PropertyCardProps }) {
   const { name, image, price } = property;
@@ -25,7 +26,7 @@ function PropertyCard({ property }: { property: PropertyCardProps }) {
           <h3 className='text-sm font-semibold mt-1'>
             {name.substring(0, 30)}
           </h3>
-          {/* property rating */}
+          <PropertyRating propertyId={propertyId} inPage={false} />
         </div>
         <p className='text-sm mt-1 text-muted-foreground '>
           {tagline.substring(0, 40)}
