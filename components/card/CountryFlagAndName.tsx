@@ -2,7 +2,6 @@ import { findCountryByCode } from '@/utils/countries';
 
 function CountryFlagAndName({ countryCode }: { countryCode: string }) {
   const validCountry = findCountryByCode(countryCode);
-  console.log({ validCountry });
   const countryName =
     validCountry!.name.length > 20
       ? `${validCountry!.name.substring(0, 20)}...`
