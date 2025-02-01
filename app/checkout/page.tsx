@@ -1,7 +1,7 @@
 'use client';
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { load } from '@cashfreepayments/cashfree-js';
 import { Button } from '@/components/ui/button';
 
@@ -11,7 +11,6 @@ export default function CheckoutPage() {
   const bookingId = searchParams.get('bookingId');
 
   const fetchClientSecret = useCallback(async () => {
-    // Create a Checkout Session
     const response = await axios.post('/api/payment', {
       bookingId: bookingId,
     });
@@ -21,8 +20,14 @@ export default function CheckoutPage() {
     };
   }, []);
 
-  let cashfree;
-  var initializeSDK = async function () {
+  let cashfree: {
+    checkout: (arg0: {
+      paymentSessionId: any;
+      redirectTarget: string;
+    }) => Promise<any>;
+  };
+
+  const initializeSDK = async function () {
     cashfree = await load({
       mode: 'sandbox',
     });
@@ -30,10 +35,9 @@ export default function CheckoutPage() {
   initializeSDK();
 
   const doPayment = async () => {
-    const { sessionId, orderId } = await fetchClientSecret();
-    let checkoutOptions = {
+    const { sessionId } = await fetchClientSecret();
+    const checkoutOptions = {
       paymentSessionId: sessionId,
-      // returnUrl: `/api/confirm?order_id=${orderId}`,
       redirectTarget: '_self',
     };
     cashfree.checkout(checkoutOptions).then((result) => {
@@ -57,10 +61,6 @@ export default function CheckoutPage() {
       }
     });
   };
-
-  // useEffect(() => {
-  //   doPayment();
-  // }, []);
 
   return (
     <div

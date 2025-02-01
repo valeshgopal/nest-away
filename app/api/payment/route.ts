@@ -6,7 +6,7 @@ import { type NextRequest, type NextResponse } from 'next/server';
 
 import db from '@/utils/db';
 import { formatDate } from '@/utils/format';
-export const POST = async (req: NextRequest, res: NextResponse) => {
+export const POST = async (req: NextRequest) => {
   const requestHeaders = new Headers(req.headers);
   const origin = requestHeaders.get('origin');
 
@@ -41,7 +41,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
   } = booking;
 
   try {
-    var request = {
+    const request = {
       'order_amount': orderTotal,
       'order_currency': 'INR',
       'customer_details': {
