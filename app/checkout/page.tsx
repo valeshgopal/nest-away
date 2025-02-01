@@ -5,12 +5,37 @@ import React, { useCallback } from 'react';
 import { load } from '@cashfreepayments/cashfree-js';
 import { Button } from '@/components/ui/button';
 
+interface PaymentResponse {
+  sessionId: string;
+  orderId: string;
+}
+
+interface PaymentDetails {
+  paymentMessage: string;
+  // Add other payment details properties as needed
+}
+
+interface CheckoutResult {
+  error?: {
+    message: string;
+    code: string;
+  };
+  redirect?: boolean;
+  paymentDetails?: PaymentDetails;
+}
+
+interface CashfreeSDK {
+  checkout: (arg0: {
+    paymentSessionId: string;
+    redirectTarget: string;
+  }) => Promise<CheckoutResult>;
+}
+
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
-
   const bookingId = searchParams.get('bookingId');
 
-  const fetchClientSecret = useCallback(async () => {
+  const fetchClientSecret = useCallback(async (): Promise<PaymentResponse> => {
     const response = await axios.post('/api/payment', {
       bookingId: bookingId,
     });
@@ -18,14 +43,9 @@ export default function CheckoutPage() {
       sessionId: response.data.sessionId,
       orderId: response.data.orderId,
     };
-  }, []);
+  }, [bookingId]);
 
-  let cashfree: {
-    checkout: (arg0: {
-      paymentSessionId: any;
-      redirectTarget: string;
-    }) => Promise<any>;
-  };
+  let cashfree: CashfreeSDK;
 
   const initializeSDK = async function () {
     cashfree = await load({
@@ -38,24 +58,20 @@ export default function CheckoutPage() {
     const { sessionId } = await fetchClientSecret();
     const checkoutOptions = {
       paymentSessionId: sessionId,
-      redirectTarget: '_self',
+      redirectTarget: '_self' as const,
     };
-    cashfree.checkout(checkoutOptions).then((result) => {
+
+    cashfree.checkout(checkoutOptions).then((result: CheckoutResult) => {
       if (result.error) {
-        // This will be true whenever user clicks on close icon inside the modal or any error happens during the payment
         console.log(
           'User has closed the popup or there is some payment error, Check for Payment Status'
         );
         console.log(result.error);
       }
       if (result.redirect) {
-        // This will be true when the payment redirection page couldnt be opened in the same window
-        // This is an exceptional case only when the page is opened inside an inAppBrowser
-        // In this case the customer will be redirected to return url once payment is completed
         console.log('Payment will be redirected');
       }
       if (result.paymentDetails) {
-        // This will be called whenever the payment is completed irrespective of transaction status
         console.log('Payment has been completed, Check for Payment Status');
         console.log(result.paymentDetails.paymentMessage);
       }
